@@ -6,7 +6,6 @@ from config import TELEGRAM_INIT_WEBHOOK_URL
 
 app = Flask(__name__)
 
-bot = Bot(FACEBOOK_ACCESS_TOKEN)
 TelegramBot.init_webhook(TELEGRAM_INIT_WEBHOOK_URL)
 
 @app.route('/telegram', methods=['POST'])
