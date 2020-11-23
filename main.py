@@ -1,42 +1,27 @@
 import requests
-from flask import Flask, request, jsonify
-from pymessenger.bot import Bot
+from config import TELEGRAM_SEND_MESSAGE_URL
 
-from telegram_bot import TelegramBot
-from config import TELEGRAM_INIT_WEBHOOK_URL, FACEBOOK_ACCESS_TOKEN, FACEBOOK_VERIFY_TOKEN
+class TelegramBot:
+    def __init__(self):
+        self.chat_id = None
+        self.text = None
 
-app = Flask(__name__)
+    def parse_webhook_data(self, data):
+        message = data['message']
+        self.chat_id = message['chat']['id']
+        self.incoming_message_text = message['text'].lower()
 
-bot = Bot(FACEBOOK_ACCESS_TOKEN)
-TelegramBot.init_webhook(TELEGRAM_INIT_WEBHOOK_URL)
+    def action(self):
+        success = None
+        msg = self.incoming_message_text
+        self.outgoing_message_text = msg
+        success = self.send_message()
+        return success
 
-@app.route('/telegram', methods=['POST'])
-def index():
-    req = request.get_json()
-    bot = TelegramBot()
-    bot.parse_webhook_data(req)
-    success = bot.action()
-    return jsonify(success=success)
+    def send_message(self):
+        res = requests.get(TELEGRAM_SEND_MESSAGE_URL.format(self.chat_id, self.outgoing_message_text))
+        return True if res.status_code == 200 else False
 
-@app.route("/facebook", methods=['GET'])
-def start():
-    token_sent = request.args.get("hub.verify_token")
-    if token_sent == FACEBOOK_VERIFY_TOKEN:
-        return request.args.get("hub.challenge")
-    return 'Invalid verification token'
-
-@app.route("/facebook", methods=['POST'])
-def recieve_message():
-    output = request.get_json()
-    for event in output['entry']:
-        messaging = event['messaging']
-        for message in messaging:
-            if message.get('message'):
-                recipient_id = message['sender']['id']
-                if message['message'].get('text'):
-                    response = message['message'].get('text')
-                    bot.send_text_message(recipient_id, response)
-    return "Message Processed"
-
-if __name__ == "__main__":
-    app.run(port=8080, debug=True)
+    @staticmethod
+    def init_webhook(url):
+        requests.get(url)
