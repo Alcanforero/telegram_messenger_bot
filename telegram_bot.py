@@ -17,9 +17,10 @@ class TelegramBot:
     def action(self):
         success = None
 
-        if self.incoming_message_text == 'hi':
-            self.outgoing_message_text = "Hello!"
-            success = self.send_message()
+        msg = self.incoming_message_text
+        self.outgoing_message_text = msg
+        success = self.send_message()
+
         return success
 
     def send_message(self):
