@@ -18,29 +18,25 @@ def index():
     success = bot.action()
     return jsonify(success=success)
 
-@app.route("/facebook", methods=['GET'])
-def handle_verification():
-    return request.args['hub.challenge']
-
-def reply(user_id, msg):
-    data = {
-        "recipient": {"id": user_id},
-        "message": {"text": msg}
-    }
-    resp = requests.post("https://graph.facebook.com/v2.6/me/messages?access_token=" + FACEBOOK_ACCESS_TOKEN, json=data)
-    print(resp.content)
- 
- 
-@app.route('/facebook', methods=['POST'])
-def handle_incoming_messages():
-    data = request.json
-    sender = data['entry'][0]['messaging'][0]['sender']['id']
-    message = data['entry'][0]['messaging'][0]['message']['text']
-
-    #Llamar a método que gener la respuesta y pasarlo por parámetro message a la siguiente llamada:
-    reply(sender, message)
- 
-    return "ok"
+@app.route("/facebook", methods=['GET', 'POST'])
+def start():
+    token_sent = request.args.get("hub.verify_token")
+    if token_sent == FACEBOOK_VERIFY_TOKEN:
+        return request.args.get("hub.challenge")
+    return 'Invalid verification token'
+       
+@app.route("/facebook", methods=['GET', 'POST'])
+def recieve_message():
+    output = request.get_json()
+    for event in output['entry']:
+        messaging = event['messaging']
+        for message in messaging:
+            if message.get('message'):
+                recipient_id = message['sender']['id']
+                if message['message'].get('text'):
+                    response = message['message'].get('text')
+                    bot.send_text_message(recipient_id, response)
+    return "Message Processed"
 
 if __name__ == "__main__":
     app.run(port=8080, debug=True)
