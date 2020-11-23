@@ -12,20 +12,16 @@ class TelegramBot:
         message = data['message']
 
         self.chat_id = message['chat']['id']
-        self.incoming_message_text = message['text'].lower()
+        self.incoming_message_text = message['text']
 
     def action(self):
         success = None
 
         msg = self.incoming_message_text
         self.outgoing_message_text = msg
-        success = self.send_message()
+        success = requests.get(TELEGRAM_SEND_MESSAGE_URL.format(self.chat_id, self.outgoing_message_text))
 
         return success
-
-    def send_message(self):
-        res = requests.get(TELEGRAM_SEND_MESSAGE_URL.format(self.chat_id, self.outgoing_message_text))
-        return True if res.status_code == 200 else False
 
     @staticmethod
     def init_webhook(url):
