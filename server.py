@@ -24,7 +24,7 @@ def start():
     if token_sent == FACEBOOK_VERIFY_TOKEN:
         return request.args.get("hub.challenge")
     return 'Invalid verification token'
-       
+
 @app.route("/facebook", methods=['GET', 'POST'])
 def recieve_message():
     output = request.get_json()
