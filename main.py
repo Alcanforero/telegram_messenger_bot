@@ -18,14 +18,14 @@ def index():
     success = bot.action()
     return jsonify(success=success)
 
-@app.route("/facebook", methods=['GET', 'POST'])
+@app.route("/facebook", methods=['GET'])
 def start():
     token_sent = request.args.get("hub.verify_token")
     if token_sent == FACEBOOK_VERIFY_TOKEN:
         return request.args.get("hub.challenge")
     return 'Invalid verification token'
 
-@app.route("/facebook", methods=['GET', 'POST'])
+@app.route("/facebook", methods=['POST'])
 def recieve_message():
     output = request.get_json()
     for event in output['entry']:
