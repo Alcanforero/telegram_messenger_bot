@@ -10,14 +10,6 @@ app = Flask(__name__)
 bot = Bot(FACEBOOK_ACCESS_TOKEN)
 TelegramBot.init_webhook(TELEGRAM_INIT_WEBHOOK_URL)
 
-@app.route('/telegram', methods=['POST'])
-def index():
-    req = request.get_json()
-    bot = TelegramBot()
-    bot.parse_webhook_data(req)
-    success = bot.action()
-    return jsonify(success=success)
-
 @app.route("/facebook", methods=['GET'])
 def start():
     token_sent = request.args.get("hub.verify_token")
@@ -37,6 +29,14 @@ def recieve_message():
                     response = message['message'].get('text')
                     bot.send_text_message(recipient_id, response)
     return "Message Processed"
+
+@app.route('/telegram', methods=['POST'])
+def index():
+    req = request.get_json()
+    bot = TelegramBot()
+    bot.parse_webhook_data(req)
+    success = bot.action()
+    return jsonify(success=success)
 
 if __name__ == "__main__":
     app.run(port=8080, debug=True)
